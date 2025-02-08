@@ -1,0 +1,53 @@
+package handler
+
+import (
+	"log"
+	"net/http"
+	"simpsonapp/internal/service"
+	"time"
+
+	"github.com/gin-gonic/gin"
+)
+
+// EpisodeResponse es la estructura para la respuesta sin el campo embedding
+type EpisodeResponse struct {
+	ID         uint      `json:"id"`
+	CreatedAt  time.Time `json:"created_at"`
+	Phrase     string    `json:"phrase"`
+	Episode    string    `json:"episode"`
+	Title      string    `json:"title"`
+	Timestamp  string    `json:"timestamp"`
+	YouTubeURL string    `json:"youtube_url"`
+}
+
+// SearchHandler maneja la búsqueda de frases
+func SearchHandler(c *gin.Context) {
+	phrase := c.Query("phrase")
+	if phrase == "" {
+		c.JSON(http.StatusBadRequest, gin.H{"error": "Frase de búsqueda requerida"})
+		return
+	}
+
+	results, err := service.SearchSimilarPhrases(phrase)
+	if err != nil {
+		log.Printf("Error en búsqueda: %v", err)
+		c.JSON(http.StatusInternalServerError, gin.H{"error": err.Error()})
+		return
+	}
+
+	// Convertir los resultados al formato de respuesta
+	var response []EpisodeResponse
+	for _, ep := range results {
+		response = append(response, EpisodeResponse{
+			ID:         ep.ID,
+			CreatedAt:  ep.CreatedAt,
+			Phrase:     ep.Phrase,
+			Episode:    ep.Episode,
+			Title:      ep.Title,
+			Timestamp:  ep.Timestamp,
+			YouTubeURL: ep.YouTubeURL,
+		})
+	}
+
+	c.JSON(http.StatusOK, response)
+}
