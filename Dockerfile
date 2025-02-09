@@ -16,5 +16,7 @@ EXPOSE 8080
 
 # Asegurar que las variables estén disponibles
 ENV GIN_MODE=release
+ENV PORT=8080
+# No agregues DATABASE_URL aquí, debe venir de Railway
 
 CMD ["./main"] 
