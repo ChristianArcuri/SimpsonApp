@@ -38,7 +38,7 @@
         .header p {
             font-size: 1.5rem;
             color: #ffffff;
-            margin: 0;
+            margin: 30px;
             text-align: right;
         }
 
@@ -106,7 +106,7 @@
             margin-top: 40px;
             padding: 20px;
             box-sizing: border-box;
-            background: url('Img4.jpg') no-repeat center center;
+            background: url('/static/Img4.jpg') no-repeat center center;
             background-size: cover;
             position: relative;
         }
@@ -152,6 +152,33 @@
                 width: 100%;
             }
         }
+
+        .loading {
+            display: none;
+            text-align: center;
+            padding: 30px;
+        }
+
+        .loading img {
+            width: 180px;
+            animation: spin 2s linear infinite;
+        }
+
+        @keyframes spin {
+            0% { transform: rotate(0deg); }
+            100% { transform: rotate(360deg); }
+        }
+
+        .loading.active {
+            display: block;
+        }
+
+        .loading p {
+            color: #ffcc00;
+            font-size: 2em;
+            margin-top: 15px;
+            text-shadow: 2px 2px #000;
+        }
     </style>
 </head>
 <body>
@@ -170,8 +197,8 @@
     </div>
 
     <!-- Loading Section -->
-    <div id="loading" class="loading" style="display: none;">
-        <img src="/static/donut1.jpg" alt="Cargando...">
+    <div id="loading" class="loading">
+        <img src="/static/donut3.png" alt="Cargando...">
         <p>¡D'oh! Buscando...</p>
     </div>
 
@@ -193,18 +220,18 @@
         });
 
         randomButton.addEventListener('click', async function() {
-            loadingDiv.style.display = 'block';
+            loadingDiv.classList.add('active');
             resultsDiv.innerHTML = '';
 
             try {
                 const response = await fetch('/api/random');
                 const data = await response.json();
                 
-                loadingDiv.style.display = 'none';
+                loadingDiv.classList.remove('active');
                 displayResults(data);
             } catch (error) {
                 console.error('Error:', error);
-                loadingDiv.style.display = 'none';
+                loadingDiv.classList.remove('active');
                 showError();
             }
         });
@@ -216,18 +243,18 @@
                 return;
             }
 
-            loadingDiv.style.display = 'block';
+            loadingDiv.classList.add('active');
             resultsDiv.innerHTML = '';
 
             try {
                 const response = await fetch(`/api/search?phrase=${encodeURIComponent(phrase)}`);
                 const data = await response.json();
                 
-                loadingDiv.style.display = 'none';
+                loadingDiv.classList.remove('active');
                 displayResults(data);
             } catch (error) {
                 console.error('Error:', error);
-                loadingDiv.style.display = 'none';
+                loadingDiv.classList.remove('active');
                 showError();
             }
         }
