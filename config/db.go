@@ -16,12 +16,10 @@ func ConnectDatabase() error {
 	if dbURL == "" {
 		return fmt.Errorf("DATABASE_URL no está configurada")
 	}
-
 	// Agregar sslmode=require para Railway
 	if os.Getenv("RAILWAY_ENVIRONMENT") != "" {
 		dbURL += "?sslmode=require"
 	}
-
 	database, err := gorm.Open(postgres.Open(dbURL), &gorm.Config{})
 	if err != nil {
 		return fmt.Errorf("error conectando a la base de datos: %w", err)
