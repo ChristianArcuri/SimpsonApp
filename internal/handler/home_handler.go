@@ -5,7 +5,7 @@ import (
 )
 
 func HomeHandler(c *gin.Context) {
-	c.HTML(200, "index.html", gin.H{
-		"title": "Buscador de Frases de Los Simpson",
+	c.HTML(200, "indexNew.html", gin.H{
+		"title": "Phrasus - Buscador de Frases de Los Simpson",
 	})
 }
