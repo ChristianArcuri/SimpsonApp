@@ -51,3 +51,25 @@ func SearchHandler(c *gin.Context) {
 
 	c.JSON(http.StatusOK, response)
 }
+
+// RandomHandler maneja la solicitud para obtener una frase aleatoria
+func RandomHandler(c *gin.Context) {
+	result, err := service.GetRandomPhrase()
+	if err != nil {
+		log.Printf("Error obteniendo frase aleatoria: %v", err)
+		c.JSON(http.StatusInternalServerError, gin.H{"error": err.Error()})
+		return
+	}
+
+	response := []EpisodeResponse{{
+		ID:         result.ID,
+		CreatedAt:  result.CreatedAt,
+		Phrase:     result.Phrase,
+		Episode:    result.Episode,
+		Title:      result.Title,
+		Timestamp:  result.Timestamp,
+		YouTubeURL: result.YouTubeURL,
+	}}
+
+	c.JSON(http.StatusOK, response)
+}

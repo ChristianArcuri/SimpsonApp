@@ -317,6 +317,7 @@
             <div class="search-box">
                 <input type="text" id="searchInput" placeholder="Ingresa una frase...">
                 <button id="searchButton">Buscar</button>
+                <button id="randomButton" style="background-color: #32CD32;">Random</button>
             </div>
         </div>
         <div id="loading" class="loading">
@@ -329,6 +330,7 @@
     <script>
         const searchInput = document.getElementById('searchInput');
         const searchButton = document.getElementById('searchButton');
+        const randomButton = document.getElementById('randomButton');
         const resultsDiv = document.getElementById('results');
         const loadingDiv = document.getElementById('loading');
 
@@ -336,6 +338,57 @@
         searchInput.addEventListener('keypress', function(e) {
             if (e.key === 'Enter') {
                 searchPhrase();
+            }
+        });
+
+        randomButton.addEventListener('click', async function() {
+            loadingDiv.classList.add('active');
+            resultsDiv.innerHTML = '';
+
+            try {
+                const response = await fetch('/api/random');
+                const data = await response.json();
+                
+                loadingDiv.classList.remove('active');
+                
+                if (Array.isArray(data) && data.length > 0) {
+                    data.forEach(episode => {
+                        const div = document.createElement('div');
+                        div.className = 'episode';
+                        div.innerHTML = `
+                            <div class="episode-info">
+                                <h3>${episode.phrase}</h3>
+                                <p><strong>Episodio:</strong> ${episode.episode}</p>
+                                <p><strong>Título:</strong> ${episode.title}</p>
+                            </div>
+                            <div class="youtube-container">
+                                <div class="tv-frame">
+                                    <div class="youtube-embed">
+                                        <iframe 
+                                            src="https://www.youtube.com/embed/${getYouTubeId(episode.youtube_url)}"
+                                            frameborder="0"
+                                            allow="accelerometer; autoplay; clipboard-write; encrypted-media; gyroscope; picture-in-picture"
+                                            allowfullscreen>
+                                        </iframe>
+                                    </div>
+                                    <div class="tv-knobs">
+                                        <div class="tv-knob"></div>
+                                        <div class="tv-knob"></div>
+                                    </div>
+                                </div>
+                            </div>
+                        `;
+                        resultsDiv.appendChild(div);
+                    });
+                }
+            } catch (error) {
+                console.error('Error:', error);
+                loadingDiv.classList.remove('active');
+                resultsDiv.innerHTML = `
+                    <div class="error-message">
+                        <img src="/static/homerotoalla.jpg" alt="Homero con toalla">
+                        <p>D'oh! Algo salió mal</p>
+                    </div>`;
             }
         });
 

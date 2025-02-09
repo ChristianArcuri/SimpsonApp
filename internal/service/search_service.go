@@ -116,3 +116,12 @@ func SearchSimilarPhrases(query string) ([]model.Episode, error) {
 
 	return topResults, nil
 }
+
+func GetRandomPhrase() (*model.Episode, error) {
+	var episode model.Episode
+	result := config.DB.Order("RANDOM()").First(&episode)
+	if result.Error != nil {
+		return nil, fmt.Errorf("error obteniendo frase aleatoria: %w", result.Error)
+	}
+	return &episode, nil
+}
