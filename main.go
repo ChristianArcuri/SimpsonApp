@@ -11,14 +11,21 @@ import (
 )
 
 func main() {
-	// Cargar variables de entorno
-	err := godotenv.Load()
-	if err != nil {
-		log.Printf("Warning: No .env file found: %v", err)
+	// Agregar logs de diagnóstico
+	log.Printf("Iniciando aplicación...")
+	log.Printf("DATABASE_URL está configurada: %v", os.Getenv("DATABASE_URL") != "")
+	log.Printf("PORT está configurada: %v", os.Getenv("PORT"))
+	log.Printf("GIN_MODE está configurada: %v", os.Getenv("GIN_MODE"))
+
+	// Cargar variables de entorno solo en desarrollo
+	if os.Getenv("GIN_MODE") != "release" {
+		if err := godotenv.Load(); err != nil {
+			log.Printf("Warning: No .env file found")
+		}
 	}
 
 	// Conectar a la base de datos
-	if err = config.ConnectDatabase(); err != nil {
+	if err := config.ConnectDatabase(); err != nil {
 		log.Fatalf("Error al conectar a la base de datos: %v", err)
 	}
 

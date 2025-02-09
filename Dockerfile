@@ -14,4 +14,7 @@ RUN go build -o main .
 
 EXPOSE 8080
 
+# Asegurar que las variables estén disponibles
+ENV GIN_MODE=release
+
 CMD ["./main"] 

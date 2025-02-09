@@ -2,6 +2,7 @@ package config
 
 import (
 	"fmt"
+	"log"
 	"os"
 	"strings"
 
@@ -14,9 +15,13 @@ var DB *gorm.DB
 
 func ConnectDatabase() error {
 	dbURL := os.Getenv("DATABASE_URL")
+	log.Printf("Intentando conectar a la base de datos...")
+
 	if dbURL == "" {
 		return fmt.Errorf("DATABASE_URL no está configurada")
 	}
+
+	log.Printf("URL de base de datos encontrada")
 
 	// Siempre usar SSL para conexiones externas
 	if !strings.Contains(dbURL, "sslmode=") {
@@ -29,5 +34,6 @@ func ConnectDatabase() error {
 	}
 
 	DB = database
+	log.Printf("Conexión exitosa a la base de datos")
 	return nil
 }
