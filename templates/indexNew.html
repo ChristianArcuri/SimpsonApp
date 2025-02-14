@@ -27,6 +27,16 @@
             box-shadow: 0px 10px 30px rgba(0, 0, 0, 0.5);
         }
 
+        .logo-container {
+            display: flex;
+            align-items: center;
+        }
+
+        .logo-container img {
+            height: 60px;  /* Ajusta este valor según necesites */
+            margin-right: 15px;
+        }
+
         .header h1 {
             font-size: 3.5rem;
             font-family: 'Comic Sans MS', cursive;
@@ -202,6 +212,10 @@
             .loading p {
                 font-size: 1.5em;
             }
+
+            .logo-container img {
+                height: 40px;
+            }
         }
 
         /* Para pantallas muy pequeñas */
@@ -281,7 +295,10 @@
 
     <!-- Header -->
     <div class="header">
-        <h1>Phrasus</h1>
+        <div class="logo-container">
+            <img src="/static/SimpsonLogo1.1.png" alt="Simpson Phrases Logo">
+            <h1>Phrasus</h1>
+        </div>
         <p>Encuentra tus frases favoritas de Los Simpsons</p>
     </div>
 
