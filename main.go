@@ -40,6 +40,7 @@ func main() {
 	router.POST("/api/episodes", handler.CreateEpisodeHandler)
 	router.POST("/api/update-embeddings", handler.UpdateEmbeddingsHandler)
 	router.GET("/api/random", handler.RandomHandler)
+	router.GET("/api/stats", handler.GetSearchStatsHandler)
 
 	// Rutas para las diferentes versiones de la página
 	router.GET("/", handler.HomeHandler)

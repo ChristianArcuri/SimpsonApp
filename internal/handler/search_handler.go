@@ -3,6 +3,8 @@ package handler
 import (
 	"log"
 	"net/http"
+	"simpsonapp/config"
+	"simpsonapp/internal/model"
 	"simpsonapp/internal/service"
 	"time"
 
@@ -29,6 +31,20 @@ func SearchHandler(c *gin.Context) {
 	}
 
 	results, err := service.SearchSimilarPhrases(phrase)
+
+	// Registrar la búsqueda
+	searchLog := model.SearchLog{
+		SearchPhrase: phrase,
+		Found:        err == nil && len(results) > 0,
+		ResultCount:  len(results),
+		UserIP:       c.ClientIP(),
+		UserAgent:    c.Request.UserAgent(),
+	}
+
+	if err := config.DB.Create(&searchLog).Error; err != nil {
+		log.Printf("Error al registrar búsqueda: %v", err)
+	}
+
 	if err != nil {
 		log.Printf("Error en búsqueda: %v", err)
 		c.JSON(http.StatusInternalServerError, gin.H{"error": err.Error()})
