@@ -33,7 +33,8 @@
         }
 
         .logo-container img {
-            height: 60px;  /* Ajusta este valor según necesites */
+            height: auto;  /* Cambiamos a auto para mantener proporción */
+            width: 300px;  /* Ancho fijo para el logo */
             margin-right: 15px;
         }
 
@@ -214,7 +215,7 @@
             }
 
             .logo-container img {
-                height: 40px;
+                width: 200px;  /* Más pequeño en móviles */
             }
         }
 
@@ -242,6 +243,10 @@
 
             .video-container iframe {
                 height: 180px;
+            }
+
+            .logo-container img {
+                width: 150px;  /* Aún más pequeño en pantallas muy pequeñas */
             }
         }
 
@@ -296,7 +301,7 @@
     <!-- Header -->
     <div class="header">
         <div class="logo-container">
-            <img src="/static/SimpsonLogo2.png" alt="Simpson Phrases Logo">
+            <img src="/static/SimpsonLogo1.2.png" alt="Simpson Phrases Logo">
         </div>
         <p>Encuentra tus frases favoritas de Los Simpsons</p>
     </div>
