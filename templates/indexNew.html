@@ -428,6 +428,8 @@
     <!-- Results Section -->
     <div id="results"></div>
 
+    <script src="https://www.youtube.com/iframe_api"></script>
+
     <script>
         const searchInput = document.getElementById('searchInput');
         const searchButton = document.getElementById('searchButton');
@@ -486,7 +488,7 @@
 
         function displayResults(data) {
             if (Array.isArray(data) && data.length > 0) {
-                data.forEach(episode => {
+                data.forEach((episode, index) => {
                     const resultHtml = `
                         <div class="result-container">
                             <div class="result-overlay">
@@ -496,14 +498,9 @@
                                     <p><strong>Título:</strong> ${episode.title}</p>
                                 </div>
                                 <div class="video-container">
-                                    <iframe 
-                                        src="https://www.youtube.com/embed/${getYouTubeId(episode.youtube_url)}"
-                                        frameborder="0"
-                                        allow="accelerometer; autoplay; clipboard-write; encrypted-media; gyroscope; picture-in-picture"
-                                        allowfullscreen>
-                                    </iframe>
+                                    <div id="player-${index}"></div>
                                     <div class="meme-controls">
-                                        <button class="btn btn-meme" onclick="createMeme(this)">
+                                        <button class="btn btn-meme" onclick="createMemeFromCurrentFrame(${index})">
                                             Crear Meme
                                         </button>
                                     </div>
@@ -512,99 +509,105 @@
                         </div>
                     `;
                     resultsDiv.innerHTML += resultHtml;
+                    
+                    // Crear el reproductor de YouTube
+                    new YT.Player(`player-${index}`, {
+                        videoId: getYouTubeId(episode.youtube_url),
+                        height: '315',
+                        width: '100%',
+                        playerVars: {
+                            'playsinline': 1,
+                            'controls': 1
+                        },
+                        events: {
+                            'onReady': onPlayerReady
+                        }
+                    });
                 });
             } else {
                 showError();
             }
         }
 
-        function showError() {
-            resultsDiv.innerHTML = `
-                <div class="result-container">
-                    <div class="result-overlay">
-                        <div class="error-message">
-                            <img src="/static/homerotoalla.jpg" alt="Homero con toalla">
-                            <h3>Busque mejor que tengo una toalla</h3>
-                        </div>
-                    </div>
-                </div>`;
+        // Almacenar los reproductores
+        const players = {};
+
+        function onPlayerReady(event) {
+            const playerId = event.target.getIframe().id;
+            const index = playerId.split('-')[1];
+            players[index] = event.target;
         }
 
-        function getYouTubeId(url) {
-            if (!url) return null;
-            const regExp = /^.*(youtu.be\/|v\/|u\/\w\/|embed\/|watch\?v=|&v=)([^#&?]*).*/;
-            const match = url.match(regExp);
-            return (match && match[2].length === 11) ? match[2] : null;
-        }
-
-        async function createMeme(button) {
+        async function createMemeFromCurrentFrame(index) {
             try {
-                // Obtener el iframe del video
-                const videoContainer = button.closest('.video-container');
-                const iframe = videoContainer.querySelector('iframe');
-                const videoId = iframe.src.split('/').pop();
+                const player = players[index];
+                if (!player) return;
+
+                // Obtener el tiempo actual del video
+                const currentTime = player.getCurrentTime();
                 
-                // Crear un canvas temporal
+                // Obtener el ID del video
+                const videoId = player.getVideoData().video_id;
+                
+                // Construir la URL del thumbnail con timestamp
+                const thumbnailUrl = `https://img.youtube.com/vi/${videoId}/hqdefault.jpg`;
+                
+                // Resto del código de creación del meme...
+                const text = prompt('Ingresa el texto para tu meme:');
+                if (!text) return;
+
+                // Crear canvas y agregar texto
                 const canvas = document.createElement('canvas');
                 const ctx = canvas.getContext('2d');
-                
-                // Cargar la imagen del thumbnail de YouTube
                 const img = new Image();
                 img.crossOrigin = "Anonymous";
-                img.src = `https://img.youtube.com/vi/${videoId}/hqdefault.jpg`;
+                img.src = thumbnailUrl;
                 
                 await new Promise((resolve, reject) => {
                     img.onload = resolve;
                     img.onerror = reject;
                 });
-                
-                // Configurar el canvas
+
                 canvas.width = img.width;
                 canvas.height = img.height;
-                
-                // Dibujar la imagen
                 ctx.drawImage(img, 0, 0);
                 
-                // Obtener el texto del usuario
-                const text = prompt('Ingresa el texto para tu meme:');
-                if (!text) return;
-                
-                // Configurar el estilo del texto
+                // Agregar texto
                 ctx.font = '30px Akbar';
                 ctx.fillStyle = 'white';
                 ctx.strokeStyle = 'black';
                 ctx.lineWidth = 3;
                 ctx.textAlign = 'center';
                 
-                // Agregar texto con sombra
                 const x = canvas.width / 2;
                 const y = canvas.height - 50;
                 ctx.strokeText(text, x, y);
                 ctx.fillText(text, x, y);
                 
-                // Convertir a imagen
+                // Mostrar preview
                 const memeUrl = canvas.toDataURL('image/jpeg', 0.8);
-                
-                // Crear elemento para mostrar el meme
-                const memePreview = document.createElement('div');
-                memePreview.className = 'meme-preview';
-                memePreview.innerHTML = `
-                    <div class="meme-modal">
-                        <img src="${memeUrl}" alt="Meme">
-                        <div class="meme-actions">
-                            <button class="btn" onclick="downloadMeme('${memeUrl}')">Descargar</button>
-                            <button class="btn" onclick="shareMeme('${memeUrl}', '${text}')">Compartir</button>
-                            <button class="btn" onclick="closeMemePreview(this)">Cerrar</button>
-                        </div>
-                    </div>
-                `;
-                
-                document.body.appendChild(memePreview);
+                showMemePreview(memeUrl, text);
                 
             } catch (error) {
                 console.error('Error creando meme:', error);
                 alert('Error al crear el meme. Intenta de nuevo.');
             }
+        }
+
+        function showMemePreview(memeUrl, text) {
+            const memePreview = document.createElement('div');
+            memePreview.className = 'meme-preview';
+            memePreview.innerHTML = `
+                <div class="meme-modal">
+                    <img src="${memeUrl}" alt="Meme">
+                    <div class="meme-actions">
+                        <button class="btn" onclick="downloadMeme('${memeUrl}')">Descargar</button>
+                        <button class="btn" onclick="shareMeme('${memeUrl}', '${text}')">Compartir</button>
+                        <button class="btn" onclick="closeMemePreview(this)">Cerrar</button>
+                    </div>
+                </div>
+            `;
+            document.body.appendChild(memePreview);
         }
 
         function downloadMeme(dataUrl) {
@@ -643,6 +646,25 @@
             if (previewContainer) {
                 previewContainer.remove();
             }
+        }
+
+        function getYouTubeId(url) {
+            if (!url) return null;
+            const regExp = /^.*(youtu.be\/|v\/|u\/\w\/|embed\/|watch\?v=|&v=)([^#&?]*).*/;
+            const match = url.match(regExp);
+            return (match && match[2].length === 11) ? match[2] : null;
+        }
+
+        function showError() {
+            resultsDiv.innerHTML = `
+                <div class="result-container">
+                    <div class="result-overlay">
+                        <div class="error-message">
+                            <img src="/static/homerotoalla.jpg" alt="Homero con toalla">
+                            <h3>Busque mejor que tengo una toalla</h3>
+                        </div>
+                    </div>
+                </div>`;
         }
     </script>
 
