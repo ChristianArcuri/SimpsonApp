@@ -594,7 +594,7 @@
                         <div class="meme-actions">
                             <button class="btn" onclick="downloadMeme('${memeUrl}')">Descargar</button>
                             <button class="btn" onclick="shareMeme('${memeUrl}', '${text}')">Compartir</button>
-                            <button class="btn" onclick="this.parentElement.parentElement.remove()">Cerrar</button>
+                            <button class="btn" onclick="closeMemePreview(this)">Cerrar</button>
                         </div>
                     </div>
                 `;
@@ -635,6 +635,13 @@
             } catch (error) {
                 console.error('Error compartiendo:', error);
                 alert('Error al compartir. Intenta descargando la imagen.');
+            }
+        }
+
+        function closeMemePreview(button) {
+            const previewContainer = button.closest('.meme-preview');
+            if (previewContainer) {
+                previewContainer.remove();
             }
         }
     </script>
