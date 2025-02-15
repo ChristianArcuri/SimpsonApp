@@ -338,6 +338,54 @@
             margin: 15px 0;
             text-shadow: 2px 2px #000;
         }
+
+        .btn-meme {
+            background-color: #ff4081;
+            margin-top: 10px;
+        }
+
+        .meme-controls {
+            text-align: center;
+            margin-top: 10px;
+        }
+
+        .meme-preview {
+            position: fixed;
+            top: 0;
+            left: 0;
+            right: 0;
+            bottom: 0;
+            background: rgba(0,0,0,0.8);
+            display: flex;
+            justify-content: center;
+            align-items: center;
+            z-index: 1000;
+        }
+
+        .meme-modal {
+            background: white;
+            padding: 20px;
+            border-radius: 10px;
+            max-width: 90%;
+            max-height: 90vh;
+            overflow: auto;
+        }
+
+        .meme-modal img {
+            max-width: 100%;
+            border-radius: 5px;
+        }
+
+        .meme-actions {
+            display: flex;
+            gap: 10px;
+            margin-top: 15px;
+            justify-content: center;
+        }
+
+        .meme-actions .btn {
+            padding: 10px 20px;
+        }
     </style>
 
     <!-- Schema.org para Rich Snippets -->
@@ -454,6 +502,11 @@
                                         allow="accelerometer; autoplay; clipboard-write; encrypted-media; gyroscope; picture-in-picture"
                                         allowfullscreen>
                                     </iframe>
+                                    <div class="meme-controls">
+                                        <button class="btn btn-meme" onclick="createMeme(this)">
+                                            Crear Meme
+                                        </button>
+                                    </div>
                                 </div>
                             </div>
                         </div>
@@ -482,6 +535,107 @@
             const regExp = /^.*(youtu.be\/|v\/|u\/\w\/|embed\/|watch\?v=|&v=)([^#&?]*).*/;
             const match = url.match(regExp);
             return (match && match[2].length === 11) ? match[2] : null;
+        }
+
+        async function createMeme(button) {
+            try {
+                // Obtener el iframe del video
+                const videoContainer = button.closest('.video-container');
+                const iframe = videoContainer.querySelector('iframe');
+                const videoId = iframe.src.split('/').pop();
+                
+                // Crear un canvas temporal
+                const canvas = document.createElement('canvas');
+                const ctx = canvas.getContext('2d');
+                
+                // Cargar la imagen del thumbnail de YouTube
+                const img = new Image();
+                img.crossOrigin = "Anonymous";
+                img.src = `https://img.youtube.com/vi/${videoId}/hqdefault.jpg`;
+                
+                await new Promise((resolve, reject) => {
+                    img.onload = resolve;
+                    img.onerror = reject;
+                });
+                
+                // Configurar el canvas
+                canvas.width = img.width;
+                canvas.height = img.height;
+                
+                // Dibujar la imagen
+                ctx.drawImage(img, 0, 0);
+                
+                // Obtener el texto del usuario
+                const text = prompt('Ingresa el texto para tu meme:');
+                if (!text) return;
+                
+                // Configurar el estilo del texto
+                ctx.font = '30px Akbar';
+                ctx.fillStyle = 'white';
+                ctx.strokeStyle = 'black';
+                ctx.lineWidth = 3;
+                ctx.textAlign = 'center';
+                
+                // Agregar texto con sombra
+                const x = canvas.width / 2;
+                const y = canvas.height - 50;
+                ctx.strokeText(text, x, y);
+                ctx.fillText(text, x, y);
+                
+                // Convertir a imagen
+                const memeUrl = canvas.toDataURL('image/jpeg', 0.8);
+                
+                // Crear elemento para mostrar el meme
+                const memePreview = document.createElement('div');
+                memePreview.className = 'meme-preview';
+                memePreview.innerHTML = `
+                    <div class="meme-modal">
+                        <img src="${memeUrl}" alt="Meme">
+                        <div class="meme-actions">
+                            <button class="btn" onclick="downloadMeme('${memeUrl}')">Descargar</button>
+                            <button class="btn" onclick="shareMeme('${memeUrl}', '${text}')">Compartir</button>
+                            <button class="btn" onclick="this.parentElement.parentElement.remove()">Cerrar</button>
+                        </div>
+                    </div>
+                `;
+                
+                document.body.appendChild(memePreview);
+                
+            } catch (error) {
+                console.error('Error creando meme:', error);
+                alert('Error al crear el meme. Intenta de nuevo.');
+            }
+        }
+
+        function downloadMeme(dataUrl) {
+            const link = document.createElement('a');
+            link.download = 'simpson-meme.jpg';
+            link.href = dataUrl;
+            link.click();
+        }
+
+        async function shareMeme(dataUrl, text) {
+            try {
+                // Convertir dataUrl a Blob
+                const response = await fetch(dataUrl);
+                const blob = await response.blob();
+                
+                // Compartir usando Web Share API
+                if (navigator.share) {
+                    const file = new File([blob], 'simpson-meme.jpg', { type: 'image/jpeg' });
+                    await navigator.share({
+                        title: 'Mi meme de Los Simpson',
+                        text: text,
+                        files: [file]
+                    });
+                } else {
+                    // Fallback para navegadores que no soportan Web Share API
+                    downloadMeme(dataUrl);
+                }
+            } catch (error) {
+                console.error('Error compartiendo:', error);
+                alert('Error al compartir. Intenta descargando la imagen.');
+            }
         }
     </script>
 
